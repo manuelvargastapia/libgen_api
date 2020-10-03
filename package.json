@@ -1,0 +1,17 @@
+{
+  "name": "express_api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "Manuel Vargas Tapia",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "jsdom": "^16.4.0",
+    "libgen": "^2.1.0",
+    "node-fetch": "^2.6.1"
+  }
+}
