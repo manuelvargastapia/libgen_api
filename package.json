@@ -9,9 +9,12 @@
   "author": "Manuel Vargas Tapia",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.17.1",
-    "jsdom": "^16.4.0",
-    "libgen": "^2.1.0",
-    "node-fetch": "^2.6.1"
+    "express": "4.17.1",
+    "jsdom": "16.4.0",
+    "libgen": "2.1.0",
+    "node-fetch": "2.6.1"
+  },
+  "engines": {
+    "node": "12.8.x"
   }
 }
