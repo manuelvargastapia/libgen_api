@@ -1,11 +1,11 @@
 {
   "name": "express_api",
   "version": "1.0.0",
-  "description": "",
   "main": "src/app/api.js",
   "scripts": {
     "start": "DEBUG=express,libgen,scrapping nodemon -x ts-node src/app/api.ts",
     "build": "tsc --project ./",
+    "postinstall": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Manuel Vargas Tapia",

@@ -1,1 +1,1 @@
-web: ts-node --optimize_for_size --max_old_space_size=920 --gc_interval=100 /src/app/api.ts
+web: node --optimize_for_size --max_old_space_size=920 --gc_interval=100 build/src/app/api.js
