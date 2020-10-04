@@ -23,22 +23,24 @@ export async function search(searchOptions: SearchOptions) {
       offset: searchOptions.offset
     };
     debug('options: %O', options);
-    const rawBookList = await libgen.search(options);
-    debug('results count: %d', rawBookList.length);
-    data = rawBookList.map((book: any) => ({
-      title: book.title,
-      author: book.author,
-      year: book.year,
-      md5: book.md5
-    }));
+    const results = await libgen.search(options);
+    if (results.length || results.length === 0) {
+      debug('results count: %d', results.length);
+      if (results.length) {
+        data = results.map((book: any) => ({
+          title: book.title,
+          author: book.author,
+          year: book.year,
+          md5: book.md5
+        }));
+      }
+    } else {
+      throw new Error(`libgen.search error: ${results}`);
+    }
   } catch (error) {
     debug('error: %o', error);
   }
-  return {
-    count: searchOptions.count,
-    offset: searchOptions.offset,
-    data
-  };
+  return data;
 }
 
 export async function getDownloadPage(md5: string) {
