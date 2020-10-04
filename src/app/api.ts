@@ -73,7 +73,7 @@ debug('starting api in port %s', port);
 
 app.get(
   '/search',
-  validator.query(searchQuerySchema),
+  //validator.query(searchQuerySchema),
   async (req: ValidatedRequest<SearchRequest>, res: express.Response) => {
     debug(`${req.method} ${req.url}`);
     const data = await search(req.query);
@@ -84,7 +84,7 @@ app.get(
 
 app.get(
   '/download',
-  validator.query(downloadQuerySchema),
+  //validator.query(downloadQuerySchema),
   async (req: ValidatedRequest<DownloadRequest>, res: express.Response) => {
     debug(`${req.method} ${req.url}`);
     const downladPageURL = await getDownloadPage(req.query.md5);
