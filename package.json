@@ -18,7 +18,8 @@
     "node-fetch": "2.6.1"
   },
   "engines": {
-    "node": "12.8.x"
+    "node": "12.8.x",
+    "npm": "6.14.x"
   },
   "lint-staged": {
     "**/*.js": [
