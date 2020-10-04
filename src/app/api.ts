@@ -24,7 +24,7 @@ const validator = createValidator({ passError: true });
 const querySchema = Joi.object({
   searchQuery: Joi.string()
     .required()
-    .min(3),
+    .min(4),
   count: Joi.number()
     .max(20)
     .default(5),
@@ -68,7 +68,7 @@ app.get(
     debug(`${req.method} ${req.url}`);
     const data = await search(req.query);
     debug('sending results: %O', data);
-    res.status(200).json(data);
+    res.status(200).json({ data });
   }
 );
 
