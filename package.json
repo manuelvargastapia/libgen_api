@@ -1,21 +1,28 @@
 {
   "name": "express_api",
   "version": "1.0.0",
-  "main": "src/app/api.js",
+  "main": "src/app/api.ts",
   "scripts": {
     "start": "DEBUG=express,libgen,scrapping nodemon -x ts-node src/app/api.ts",
-    "build": "tsc --project ./",
-    "postinstall": "tsc",
+    "serve": "npm run build && DEBUG=express,libgen,scrapping node dist/src/app/api.js",
+    "build": "tsc",
+    "postinstall": "npm run build",
+    "watch-node": "nodemon dist/server.js",
+    "watch-ts": "tsc -w",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Manuel Vargas Tapia",
   "license": "MIT",
   "dependencies": {
+    "@hapi/joi": "17.1.1",
     "debug": "4.2.0",
     "express": "4.17.1",
+    "express-joi-validation": "4.0.4-beta.0",
     "jsdom": "16.4.0",
     "libgen": "2.1.0",
-    "node-fetch": "2.6.1"
+    "node-fetch": "2.6.1",
+    "ts-node": "9.0.0",
+    "typescript": "4.0.3"
   },
   "engines": {
     "node": "12.8.x",
@@ -28,7 +35,6 @@
     ]
   },
   "devDependencies": {
-    "@hapi/joi": "17.1.1",
     "@types/express": "4.17.8",
     "@types/hapi__joi": "17.1.6",
     "@types/jsdom": "16.2.4",
@@ -44,12 +50,8 @@
     "eslint-plugin-promise": "4.2.1",
     "eslint-plugin-react": "7.21.3",
     "eslint-plugin-react-hooks": "4.0.0",
-    "express-joi-validation": "4.0.4-beta.0",
-    "husky": "4.3.0",
     "lint-staged": "10.4.0",
     "nodemon": "2.0.4",
-    "prettier-eslint-cli": "5.0.0",
-    "ts-node": "9.0.0",
-    "typescript": "4.0.3"
+    "prettier-eslint-cli": "5.0.0"
   }
 }
