@@ -1,10 +1,11 @@
 import express from 'express';
-import * as Joi from '@hapi/joi';
+import Joi from '@hapi/joi';
 import {
   ContainerTypes,
   ValidatedRequest,
   ValidatedRequestSchema,
-  createValidator
+  createValidator,
+  ExpressJoiError
 } from 'express-joi-validation';
 
 import { getDownloadLink } from '../utils/scrapping';
@@ -18,7 +19,7 @@ if (port == null || port === '') {
 const debug = require('debug')('express');
 
 const app = express();
-const validator = createValidator();
+const validator = createValidator({ passError: true });
 
 const querySchema = Joi.object({
   searchQuery: Joi.string()
@@ -80,6 +81,34 @@ app.get('/download/:md5?', async (req, res) => {
   debug('sending download link: %s', downloadLink);
   res.status(200).json({ data: { downloadLink } });
 });
+
+app.use(
+  (
+    err: any | ExpressJoiError,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    // debug('CONTAINER TYPES: %O', ContainerTypes); FIX: ContainerTypes is undefined when accessed as an object
+    // if (err && err.type in ContainerTypes) {
+    //   const e: ExpressJoiError = err;
+    //   res.status(400).end(`You submitted a bad ${e.type} paramater`);
+    // } else {
+    //   res.status(500).end('internal server error');
+    // }
+
+    if (err && err.error && err.error.isJoi) {
+      res.status(400).json({
+        type: err.type,
+        error: err.error.toString()
+      });
+    } else {
+      res.status(500).json({
+        error: 'internal server error'
+      });
+    }
+  }
+);
 
 app.listen(port, () => {
   debug(`listening http://localhost:${port}`);
