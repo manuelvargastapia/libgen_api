@@ -43,11 +43,13 @@ export async function search(searchOptions: SearchOptions) {
   return data;
 }
 
-export async function getDownloadPage(md5: string) {
+export async function getDownloadPage(md5: string): Promise<string> {
   debug('getting download page for md5: %s', md5);
-  let downloadPageURL = '';
+  let downloadPageURL: string = '';
   try {
-    downloadPageURL = await libgen.utils.check.canDownload(md5);
+    const result = await libgen.utils.check.canDownload(md5.trim());
+    if (typeof result !== 'string') throw new Error(`libgen.utils.check error: ${downloadPageURL}`);
+    downloadPageURL = result;
   } catch (error) {
     debug('error: %o', error);
   }
