@@ -1,37 +1,31 @@
+import { SearchOptions } from '../types';
+
 const debug = require('debug')('libgen');
 const libgen = require('libgen');
 
-async function getFastestMirror() {
+async function getFastestMirror(): Promise<string> {
   debug('getting fastest mirror');
-  const urlString = await libgen.mirror();
-  return urlString;
+  return await libgen.mirror();
 }
 
-async function search({
-  query = '',
-  count = 5,
-  search_in = 'def',
-  reverse = false,
-  sort_by = 'def',
-  offset = 0
-}) {
-  let data = [];
+export async function search(searchOptions: SearchOptions) {
+  let data: any[] = [];
   try {
     const mirror = await getFastestMirror();
     debug('mirror: %s', mirror);
     const options = {
       mirror,
-      query,
-      count,
-      search_in,
-      reverse,
-      sort_by,
-      offset
+      query: searchOptions.searchQuery,
+      count: searchOptions.count,
+      search_in: searchOptions.searchIn,
+      reverse: searchOptions.reverse,
+      sort_by: searchOptions.sortBy,
+      offset: searchOptions.offset
     };
     debug('options: %O', options);
     const rawBookList = await libgen.search(options);
     debug('results count: %d', rawBookList.length);
-    data = rawBookList.map(book => ({
+    data = rawBookList.map((book: any) => ({
       title: book.title,
       author: book.author,
       year: book.year,
@@ -41,13 +35,13 @@ async function search({
     debug('error: %o', error);
   }
   return {
-    count,
-    offset,
+    count: searchOptions.count,
+    offset: searchOptions.offset,
     data
   };
 }
 
-async function getDownloadPage(md5) {
+export async function getDownloadPage(md5: string) {
   debug('getting download page for md5: %s', md5);
   let downloadPageURL = '';
   try {
@@ -57,8 +51,3 @@ async function getDownloadPage(md5) {
   }
   return downloadPageURL;
 }
-
-module.exports = {
-  search,
-  getDownloadPage
-};

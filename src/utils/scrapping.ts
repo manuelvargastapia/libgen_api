@@ -1,9 +1,10 @@
-const debug = require('debug')('scrapping');
-const fetch = require('node-fetch');
-const { JSDOM } = require('jsdom');
+import { JSDOM } from 'jsdom';
+import fetch from 'node-fetch';
 
-async function getDownloadLink(url) {
-  let downloadLink = '';
+const debug = require('debug')('scrapping');
+
+export async function getDownloadLink(url: string): Promise<string> {
+  let downloadLink: string = '';
   try {
     debug('getting download link from %s', url);
     const selector = '#info > h2 > a';
@@ -11,12 +12,10 @@ async function getDownloadLink(url) {
     const text = await response.text();
     const dom = new JSDOM(text);
     const { document } = dom.window;
-    const list = [...document.querySelectorAll(selector)].map(a => a.href);
+    const list = [...document.querySelectorAll<any>(selector)].map(a => a.href); // Set to any because Element has no "href" as a property
     [downloadLink] = list;
   } catch (error) {
     debug('error: %o', error);
   }
   return downloadLink;
 }
-
-module.exports = { getDownloadLink };
