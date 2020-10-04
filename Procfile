@@ -1,1 +1,1 @@
-web: DEBUG=express,libgen,scrapping node --optimize_for_size --max_old_space_size=920 --gc_interval=100 app/build/src/app/api.js
+web: ts-node --optimize_for_size --max_old_space_size=920 --gc_interval=100 /src/app/api.ts
