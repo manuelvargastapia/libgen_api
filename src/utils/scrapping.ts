@@ -13,7 +13,11 @@ export async function getDownloadLink(url: string): Promise<string> {
     const dom = new JSDOM(text);
     const { document } = dom.window;
     const list = [...document.querySelectorAll<any>(selector)].map(a => a.href); // Set to any because Element has no "href" as a property
-    [downloadLink] = list;
+    if (list.length && list[0] && list[0] != '') {
+      [downloadLink] = list;
+    } else {
+      throw new Error(`scrapping error. href list: ${list}`);
+    }
   } catch (error) {
     debug('error: %o', error);
   }

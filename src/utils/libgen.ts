@@ -23,29 +23,33 @@ export async function search(searchOptions: SearchOptions) {
       offset: searchOptions.offset
     };
     debug('options: %O', options);
-    const rawBookList = await libgen.search(options);
-    debug('results count: %d', rawBookList.length);
-    data = rawBookList.map((book: any) => ({
-      title: book.title,
-      author: book.author,
-      year: book.year,
-      md5: book.md5
-    }));
+    const results = await libgen.search(options);
+    if (results.length || results.length === 0) {
+      debug('results count: %d', results.length);
+      if (results.length) {
+        data = results.map((book: any) => ({
+          title: book.title,
+          author: book.author,
+          year: book.year,
+          md5: book.md5
+        }));
+      }
+    } else {
+      throw new Error(`libgen.search error: ${results}`);
+    }
   } catch (error) {
     debug('error: %o', error);
   }
-  return {
-    count: searchOptions.count,
-    offset: searchOptions.offset,
-    data
-  };
+  return data;
 }
 
-export async function getDownloadPage(md5: string) {
+export async function getDownloadPage(md5: string): Promise<string> {
   debug('getting download page for md5: %s', md5);
-  let downloadPageURL = '';
+  let downloadPageURL: string = '';
   try {
-    downloadPageURL = await libgen.utils.check.canDownload(md5);
+    const result = await libgen.utils.check.canDownload(md5.trim());
+    if (typeof result !== 'string') throw new Error(`libgen.utils.check error: ${downloadPageURL}`);
+    downloadPageURL = result;
   } catch (error) {
     debug('error: %o', error);
   }

@@ -1,10 +1,11 @@
 import express from 'express';
-import * as Joi from '@hapi/joi';
+import Joi from '@hapi/joi';
 import {
   ContainerTypes,
   ValidatedRequest,
   ValidatedRequestSchema,
-  createValidator
+  createValidator,
+  ExpressJoiError
 } from 'express-joi-validation';
 
 import { getDownloadLink } from '../utils/scrapping';
@@ -18,12 +19,12 @@ if (port == null || port === '') {
 const debug = require('debug')('express');
 
 const app = express();
-const validator = createValidator();
+const validator = createValidator({ passError: true });
 
-const querySchema = Joi.object({
+const searchQuerySchema = Joi.object({
   searchQuery: Joi.string()
     .required()
-    .min(3),
+    .min(4),
   count: Joi.number()
     .max(20)
     .default(5),
@@ -47,7 +48,11 @@ const querySchema = Joi.object({
   offset: Joi.number().default(0)
 });
 
-interface CustomRequest extends ValidatedRequestSchema {
+const downloadQuerySchema = Joi.object({
+  md5: Joi.string()
+});
+
+interface SearchRequest extends ValidatedRequestSchema {
   [ContainerTypes.Query]: {
     searchQuery: string;
     count: number;
@@ -58,28 +63,73 @@ interface CustomRequest extends ValidatedRequestSchema {
   };
 }
 
+interface DownloadRequest extends ValidatedRequestSchema {
+  [ContainerTypes.Query]: {
+    md5: string;
+  };
+}
+
 debug('starting api in port %s', port);
 
 app.get(
   '/search',
-  validator.query(querySchema),
-  async (req: ValidatedRequest<CustomRequest>, res: express.Response) => {
+  validator.query(searchQuerySchema),
+  async (req: ValidatedRequest<SearchRequest>, res: express.Response) => {
     debug(`${req.method} ${req.url}`);
     const data = await search(req.query);
     debug('sending results: %O', data);
-    res.status(200).json(data);
+    res.status(200).json({ data });
   }
 );
 
-app.get('/download/:md5?', async (req, res) => {
-  debug(`${req.method} ${req.url}`);
-  const { md5 } = req.params;
-  const downladPageURL = await getDownloadPage(md5);
-  debug('download page url: %s', downladPageURL);
-  const downloadLink = await getDownloadLink(downladPageURL);
-  debug('sending download link: %s', downloadLink);
-  res.status(200).json({ data: { downloadLink } });
-});
+app.get(
+  '/download',
+  validator.query(downloadQuerySchema),
+  async (req: ValidatedRequest<DownloadRequest>, res: express.Response) => {
+    debug(`${req.method} ${req.url}`);
+    const downladPageURL = await getDownloadPage(req.query.md5);
+    debug('download page url: %s', downladPageURL);
+    if (downladPageURL != '') {
+      const downloadLink = await getDownloadLink(downladPageURL);
+      debug('sending download link: %s', downloadLink);
+      if (downloadLink != '') {
+        res.status(200).json({ data: { downloadLink } });
+      } else {
+        res.status(404).json({ error: 'resource not found' });
+      }
+    } else {
+      res.status(404).json({ error: 'resource not found' });
+    }
+  }
+);
+
+app.use(
+  (
+    err: any | ExpressJoiError,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    // debug('CONTAINER TYPES: %O', ContainerTypes); FIX: ContainerTypes is undefined when accessed as an object
+    // if (err && err.type in ContainerTypes) {
+    //   const e: ExpressJoiError = err;
+    //   res.status(400).end(`You submitted a bad ${e.type} paramater`);
+    // } else {
+    //   res.status(500).end('internal server error');
+    // }
+
+    if (err && err.error && err.error.isJoi) {
+      res.status(400).json({
+        type: err.type,
+        error: err.error.toString()
+      });
+    } else {
+      res.status(500).json({
+        error: 'internal server error'
+      });
+    }
+  }
+);
 
 app.listen(port, () => {
   debug(`listening http://localhost:${port}`);
