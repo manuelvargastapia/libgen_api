@@ -21,7 +21,7 @@ const debug = require('debug')('express');
 const app = express();
 const validator = createValidator({ passError: true });
 
-const querySchema = Joi.object({
+const searchQuerySchema = Joi.object({
   searchQuery: Joi.string()
     .required()
     .min(4),
@@ -48,7 +48,11 @@ const querySchema = Joi.object({
   offset: Joi.number().default(0)
 });
 
-interface CustomRequest extends ValidatedRequestSchema {
+const downloadQuerySchema = Joi.object({
+  md5: Joi.string()
+});
+
+interface SearchRequest extends ValidatedRequestSchema {
   [ContainerTypes.Query]: {
     searchQuery: string;
     count: number;
@@ -59,12 +63,18 @@ interface CustomRequest extends ValidatedRequestSchema {
   };
 }
 
+interface DownloadRequest extends ValidatedRequestSchema {
+  [ContainerTypes.Query]: {
+    md5: string;
+  };
+}
+
 debug('starting api in port %s', port);
 
 app.get(
   '/search',
-  validator.query(querySchema),
-  async (req: ValidatedRequest<CustomRequest>, res: express.Response) => {
+  validator.query(searchQuerySchema),
+  async (req: ValidatedRequest<SearchRequest>, res: express.Response) => {
     debug(`${req.method} ${req.url}`);
     const data = await search(req.query);
     debug('sending results: %O', data);
@@ -72,15 +82,26 @@ app.get(
   }
 );
 
-app.get('/download/:md5?', async (req, res) => {
-  debug(`${req.method} ${req.url}`);
-  const { md5 } = req.params;
-  const downladPageURL = await getDownloadPage(md5);
-  debug('download page url: %s', downladPageURL);
-  const downloadLink = await getDownloadLink(downladPageURL);
-  debug('sending download link: %s', downloadLink);
-  res.status(200).json({ data: { downloadLink } });
-});
+app.get(
+  '/download',
+  validator.query(downloadQuerySchema),
+  async (req: ValidatedRequest<DownloadRequest>, res: express.Response) => {
+    debug(`${req.method} ${req.url}`);
+    const downladPageURL = await getDownloadPage(req.query.md5);
+    debug('download page url: %s', downladPageURL);
+    if (downladPageURL != '') {
+      const downloadLink = await getDownloadLink(downladPageURL);
+      debug('sending download link: %s', downloadLink);
+      if (downloadLink != '') {
+        res.status(200).json({ data: { downloadLink } });
+      } else {
+        res.status(404).json({ error: 'resource not found' });
+      }
+    } else {
+      res.status(404).json({ error: 'resource not found' });
+    }
+  }
+);
 
 app.use(
   (
