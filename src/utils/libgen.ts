@@ -3,6 +3,8 @@ import { SearchOptions } from '../types';
 const debug = require('debug')('libgen');
 const libgen = require('libgen');
 
+const coversHost: string  = "http://library.lol/covers/";
+
 async function getFastestMirror(): Promise<string> {
   debug('getting fastest mirror');
   return await libgen.mirror();
@@ -28,10 +30,12 @@ export async function search(searchOptions: SearchOptions) {
       debug('results count: %d', results.length);
       if (results.length) {
         data = results.map((book: any) => ({
+          id: parseInt(book.id),
           title: book.title,
           author: book.author,
-          year: book.year,
-          md5: book.md5
+          year: parseInt(book.year),
+          md5: book.md5,
+          coverUrl: book.coverurl ? `${coversHost}${book.coverurl}` : null
         }));
       }
     } else {
