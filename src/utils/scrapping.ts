@@ -7,7 +7,7 @@ export async function getDownloadLink(url: string): Promise<string> {
   let downloadLink: string = '';
   try {
     debug('getting download link from %s', url);
-    const selector = '#info > h2 > a';
+    const selector = '#download > h2 > a';
     const response = await fetch(url);
     const text = await response.text();
     const dom = new JSDOM(text);
