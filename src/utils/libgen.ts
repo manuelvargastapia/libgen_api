@@ -7,7 +7,13 @@ const coversHost: string  = "http://library.lol/covers/";
 
 async function getFastestMirror(): Promise<string> {
   debug('getting fastest mirror');
-  return await libgen.mirror();
+  let mirror: string = "http://gen.lib.rus.ec";
+  try {
+    mirror = await libgen.mirror();
+  } catch (error) {
+    debug('error: %o', error);
+  }
+  return mirror;
 }
 
 export async function search(searchOptions: SearchOptions) {
