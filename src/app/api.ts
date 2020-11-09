@@ -23,7 +23,7 @@ const app = express();
 const validator = createValidator({ passError: true });
 
 const searchQuerySchema = Joi.object({
-  searchQuery: Joi.string()
+  searchTerm: Joi.string()
     .required()
     .min(4),
   count: Joi.number()
@@ -31,6 +31,7 @@ const searchQuerySchema = Joi.object({
     .default(5),
   searchIn: Joi.string()
     .equal(
+      'def',
       'title',
       'author',
       'series',
@@ -44,7 +45,7 @@ const searchQuerySchema = Joi.object({
     .default('def'),
   reverse: Joi.boolean().default(false),
   sortBy: Joi.string()
-    .equal('title', 'publisher', 'year', 'pages', 'language', 'filesize', 'extension')
+    .equal('def', 'title', 'publisher', 'year', 'pages', 'language', 'filesize', 'extension')
     .default('def'),
   offset: Joi.number().default(0)
 });
@@ -55,7 +56,7 @@ const downloadQuerySchema = Joi.object({
 
 interface SearchRequest extends ValidatedRequestSchema {
   [ContainerTypes.Query]: {
-    searchQuery: string;
+    searchTerm: string;
     count: number;
     searchIn: string;
     reverse: boolean;

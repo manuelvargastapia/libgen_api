@@ -23,7 +23,7 @@ export async function search(searchOptions: SearchOptions) {
     debug('mirror: %s', mirror);
     const options = {
       mirror,
-      query: searchOptions.searchQuery,
+      query: searchOptions.searchTerm,
       count: searchOptions.count,
       search_in: searchOptions.searchIn,
       reverse: searchOptions.reverse,
