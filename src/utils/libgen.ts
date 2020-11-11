@@ -3,11 +3,11 @@ import { SearchOptions } from '../types';
 const debug = require('debug')('libgen');
 const libgen = require('libgen');
 
-const coversHost: string  = "http://library.lol/covers/";
+const coversHost: string = 'http://library.lol/covers/';
 
 async function getFastestMirror(): Promise<string> {
   debug('getting fastest mirror');
-  let mirror: string = "http://gen.lib.rus.ec";
+  let mirror: string = 'http://gen.lib.rus.ec';
   try {
     mirror = await libgen.mirror();
   } catch (error) {
@@ -36,12 +36,27 @@ export async function search(searchOptions: SearchOptions) {
       debug('results count: %d', results.length);
       if (results.length) {
         data = results.map((book: any) => ({
-          id: parseInt(book.id),
-          title: book.title,
-          author: book.author,
-          year: parseInt(book.year),
-          md5: book.md5,
-          coverUrl: book.coverurl ? `${coversHost}${book.coverurl}` : null
+          id: book.id ? parseInt(book.id) : null,
+          title: book.title ?? null,
+          author: book.author ?? null,
+          year: book.year ? parseInt(book.year) : null,
+          md5: book.md5 ?? null,
+          coverUrl: book.coverurl ? `${coversHost}${book.coverurl}` : null,
+          volumeInfo: book.volumeinfo ? parseInt(book.volumeinfo) : null,
+          series: book.series ?? null,
+          edition: book.edition ?? null,
+          publisher: book.publisher ?? null,
+          city: book.city ?? null,
+          pages: book.pages ? parseInt(book.pages) : null,
+          language: book.language ?? null,
+          isbn: book.identifier ?? null,
+          doi: book.doi ?? null,
+          googleBookId: book.googlebookid ? parseInt(book.googlebookid) : null,
+          paginated: book.paginated ? book.paginated == 1 : null,
+          scanned: book.scanned ? book.scanned == 1 : null,
+          fileSize: book.filesize ? parseInt(book.filesize) : null,
+          extension: book.extension ?? null,
+          timeAdded: book.timeadded ?? null
         }));
       }
     } else {
