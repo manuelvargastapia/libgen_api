@@ -7,3 +7,4 @@ I recommend using `heroku builds:create -a polar-temple-33235` to build and push
 ## TODO
 
 - [ ] Handle ocasional Gateway Timeouts of `getFastestMirror()`
+- [ ] Use a model to generate response data (at least a BookModel)
