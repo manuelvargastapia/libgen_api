@@ -10,7 +10,7 @@ import {
 import cors from 'cors';
 
 import { getDownloadLink } from '../utils/scrapping';
-import { search, getDownloadPage } from '../utils/libgen';
+import { search, getDownloadPage, getBookById } from '../utils/libgen';
 
 let port = process.env.PORT;
 if (port == null || port === '') {
@@ -54,6 +54,10 @@ const downloadQuerySchema = Joi.object({
   md5: Joi.string()
 });
 
+const getBookDetailsQuerySchema = Joi.object({
+  id: Joi.number().required()
+});
+
 interface SearchRequest extends ValidatedRequestSchema {
   [ContainerTypes.Query]: {
     searchTerm: string;
@@ -71,6 +75,13 @@ interface DownloadRequest extends ValidatedRequestSchema {
   };
 }
 
+interface DetailsRequest extends ValidatedRequestSchema {
+  [ContainerTypes.Query]: {
+    id: number;
+    fields: string;
+  };
+}
+
 debug('starting api in port %s', port);
 
 app.use(cors());
@@ -82,6 +93,17 @@ app.get(
     debug(`${req.method} ${req.url}`);
     const data = await search(req.query);
     debug('sending results: %O', data);
+    res.status(200).json({ data });
+  }
+);
+
+app.get(
+  '/details',
+  validator.query(getBookDetailsQuerySchema),
+  async (req: ValidatedRequest<DetailsRequest>, res: express.Response) => {
+    debug(`${req.method} ${req.url}`);
+    const data = await getBookById(req.query.id);
+    debug('sending book details: %O', data);
     res.status(200).json({ data });
   }
 );

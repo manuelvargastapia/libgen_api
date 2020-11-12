@@ -16,6 +16,24 @@ async function getFastestMirror(): Promise<string> {
   return mirror;
 }
 
+export async function getBookById(id: number) {
+  let data: any[] = [];
+  try {
+    debug('id: %d', id);
+    const mirror = await getFastestMirror();
+    debug('mirror: %s', mirror);
+    const url = `${mirror}/json.php?ids=${id}&fields=id,title,author,year,md5,coverurl,volumeinfo,series,edition,publisher,city,pages,language,identifier,doi,paginated,scanned,filesize,extension,timeadded`;
+    debug('url: %s', url);
+    const response = await require('got')(url);
+    const result = JSON.parse(response.body);
+    debug('result: %O', result);
+    data = result;
+  } catch (error) {
+    debug('error: %o', error);
+  }
+  return data;
+}
+
 export async function search(searchOptions: SearchOptions) {
   let data: any[] = [];
   try {
@@ -51,12 +69,13 @@ export async function search(searchOptions: SearchOptions) {
           language: book.language ?? null,
           isbn: book.identifier ?? null,
           doi: book.doi ?? null,
-          googleBookId: book.googlebookid ? parseInt(book.googlebookid) : null,
           paginated: book.paginated ? book.paginated == 1 : null,
           scanned: book.scanned ? book.scanned == 1 : null,
           fileSize: book.filesize ? parseInt(book.filesize) : null,
           extension: book.extension ?? null,
-          timeAdded: book.timeadded ?? null
+          timeAdded: book.timeadded ?? null,
+          description: book.descr ?? null,
+          contents: book.toc ?? null
         }));
       }
     } else {
