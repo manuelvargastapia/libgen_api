@@ -21,32 +21,30 @@ export async function getBookById(id: number) {
   try {
     debug('id: %d', id);
     const mirror = await getFastestMirror();
-    debug('mirror: %s', mirror);
-    const url = `${mirror}/json.php?ids=${id}&fields=id,title,author,year,md5,coverurl,volumeinfo,series,edition,publisher,city,pages,language,identifier,doi,paginated,scanned,filesize,extension,timeadded,descr,toc`;
-    debug('url: %s', url);
-    const response = await require('got')(url);
-    const result = JSON.parse(response.body);
-    debug('result: %O', result);
-    data = result;
-  } catch (error) {
-    debug('error: %o', error);
-  }
-  return data;
-}
-
-export async function search(searchOptions: SearchOptions) {
-  let data: any[] = [];
-  try {
-    const mirror = await getFastestMirror();
-    debug('mirror: %s', mirror);
     const options = {
       mirror,
-      query: searchOptions.searchTerm,
-      count: searchOptions.count,
-      search_in: searchOptions.searchIn,
-      reverse: searchOptions.reverse,
-      sort_by: searchOptions.sortBy,
-      offset: searchOptions.offset
+      ids: id.toString(),
+      fields: [
+        'id',
+        'title',
+        'author',
+        'year',
+        'md5',
+        'coverurl',
+        'volumeinfo',
+        'series',
+        'edition',
+        'publisher',
+        'city',
+        'pages',
+        'language',
+        'identifier',
+        'doi',
+        'filesize',
+        'extension',
+        'descr',
+        'toc'
+      ]
     };
     debug('options: %O', options);
     const results = await libgen.search(options);
@@ -69,13 +67,48 @@ export async function search(searchOptions: SearchOptions) {
           language: book.language ?? null,
           isbn: book.identifier ?? null,
           doi: book.doi ?? null,
-          paginated: book.paginated ? book.paginated == 1 : null,
-          scanned: book.scanned ? book.scanned == 1 : null,
           fileSize: book.filesize ? parseInt(book.filesize) : null,
           extension: book.extension ?? null,
-          timeAdded: book.timeadded ?? null,
           description: book.descr ?? null,
           contents: book.toc ?? null
+        }));
+      }
+    } else {
+      throw new Error(`libgen.getBookById error: ${results}`);
+    }
+  } catch (error) {
+    debug('error: %o', error);
+  }
+  return data;
+}
+
+export async function search(searchOptions: SearchOptions) {
+  let data: any[] = [];
+  try {
+    const mirror = await getFastestMirror();
+    debug('mirror: %s', mirror);
+    const options = {
+      mirror,
+      query: searchOptions.searchTerm,
+      count: searchOptions.count,
+      search_in: searchOptions.searchIn,
+      reverse: searchOptions.reverse,
+      sort_by: searchOptions.sortBy,
+      offset: searchOptions.offset,
+      fields: ['id', 'title', 'author', 'md5', 'coverurl', 'extension']
+    };
+    debug('options: %O', options);
+    const results = await libgen.search(options);
+    if (results.length || results.length === 0) {
+      debug('results count: %d', results.length);
+      if (results.length) {
+        data = results.map((book: any) => ({
+          id: book.id ? parseInt(book.id) : null,
+          title: book.title ?? null,
+          author: book.author ?? null,
+          md5: book.md5 ?? null,
+          coverUrl: book.coverurl ? `${coversHost}${book.coverurl}` : null,
+          extension: book.extension ?? null
         }));
       }
     } else {
