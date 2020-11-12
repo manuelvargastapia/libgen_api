@@ -68,7 +68,7 @@ export async function getBookById(id: number) {
           isbn: book.identifier ?? null,
           doi: book.doi ?? null,
           fileSize: book.filesize ? parseInt(book.filesize) : null,
-          extension: book.extension ?? null,
+          fileExtension: book.extension ?? null,
           description: book.descr ?? null,
           contents: book.toc ?? null
         }));
@@ -108,7 +108,7 @@ export async function search(searchOptions: SearchOptions) {
           author: book.author ?? null,
           md5: book.md5 ?? null,
           coverUrl: book.coverurl ? `${coversHost}${book.coverurl}` : null,
-          extension: book.extension ?? null
+          fileExtension: book.extension ?? null
         }));
       }
     } else {
