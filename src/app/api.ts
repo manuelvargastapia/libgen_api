@@ -78,7 +78,6 @@ interface DownloadRequest extends ValidatedRequestSchema {
 interface DetailsRequest extends ValidatedRequestSchema {
   [ContainerTypes.Query]: {
     id: number;
-    fields: string;
   };
 }
 
