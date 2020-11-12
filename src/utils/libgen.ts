@@ -22,7 +22,7 @@ export async function getBookById(id: number) {
     debug('id: %d', id);
     const mirror = await getFastestMirror();
     debug('mirror: %s', mirror);
-    const url = `${mirror}/json.php?ids=${id}&fields=id,title,author,year,md5,coverurl,volumeinfo,series,edition,publisher,city,pages,language,identifier,doi,paginated,scanned,filesize,extension,timeadded`;
+    const url = `${mirror}/json.php?ids=${id}&fields=id,title,author,year,md5,coverurl,volumeinfo,series,edition,publisher,city,pages,language,identifier,doi,paginated,scanned,filesize,extension,timeadded,descr,toc`;
     debug('url: %s', url);
     const response = await require('got')(url);
     const result = JSON.parse(response.body);
