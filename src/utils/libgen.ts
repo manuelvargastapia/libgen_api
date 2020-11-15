@@ -52,25 +52,25 @@ export async function getBookById(id: number) {
       debug('results count: %d', results.length);
       if (results.length) {
         data = results.map((book: any) => ({
-          id: book.id ? parseInt(book.id) : null,
-          title: book.title ?? null,
-          author: book.author ?? null,
-          year: book.year ? parseInt(book.year) : null,
-          md5: book.md5 ?? null,
-          coverUrl: book.coverurl ? `${coversHost}${book.coverurl}` : null,
-          volumeInfo: book.volumeinfo ? parseInt(book.volumeinfo) : null,
-          series: book.series ?? null,
-          edition: book.edition ?? null,
-          publisher: book.publisher ?? null,
-          city: book.city ?? null,
-          pages: book.pages ? parseInt(book.pages) : null,
-          language: book.language ?? null,
-          isbn: book.identifier ?? null,
-          doi: book.doi ?? null,
-          fileSize: book.filesize ? parseInt(book.filesize) : null,
-          fileExtension: book.extension ?? null,
-          description: book.descr ?? null,
-          contents: book.toc ?? null
+          id: !!book.id?.trim() ? parseInt(book.id) : null,
+          title: !!book.title?.trim() ? book.title : null,
+          author: !!book.author?.trim() ? book.author : null,
+          year: !!book.year?.trim() ? parseInt(book.year) : null,
+          md5: !!book.md5?.trim() ? book.md5 : null,
+          coverUrl: !!book.coverurl?.trim() ? `${coversHost}${book.coverurl}` : null,
+          volumeInfo: !!book.volumeinfo?.trim() ? parseInt(book.volumeinfo) : null,
+          series: !!book.series?.trim() ? book.series : null,
+          edition: !!book.edition?.trim() ? book.edition : null,
+          publisher: !!book.publisher?.trim() ? book.publisher : null,
+          city: !!book.city?.trim() ? book.city : null,
+          pages: !!book.pages?.trim() ? parseInt(book.pages) : null,
+          language: !!book.language?.trim() ? book.language : null,
+          isbn: !!book.identifier?.trim() ? book.identifier : null,
+          doi: !!book.doi?.trim() ? book.doi : null,
+          fileSize: !!book.filesize?.trim() ? parseInt(book.filesize) : null,
+          fileExtension: !!book.extension?.trim() ? book.extension : null,
+          description: !!book.descr?.trim() ? book.descr : null,
+          contents: !!book.toc?.trim() ? book.toc : null
         }));
       }
     } else {
@@ -95,7 +95,7 @@ export async function search(searchOptions: SearchOptions) {
       reverse: searchOptions.reverse,
       sort_by: searchOptions.sortBy,
       offset: searchOptions.offset,
-      fields: ['id', 'title', 'author', 'md5', 'coverurl', 'extension']
+      fields: ['id', 'title', 'author', 'md5', 'extension']
     };
     debug('options: %O', options);
     const results = await libgen.search(options);
@@ -103,12 +103,11 @@ export async function search(searchOptions: SearchOptions) {
       debug('results count: %d', results.length);
       if (results.length) {
         data = results.map((book: any) => ({
-          id: book.id ? parseInt(book.id) : null,
-          title: book.title ?? null,
-          author: book.author ?? null,
-          md5: book.md5 ?? null,
-          coverUrl: book.coverurl ? `${coversHost}${book.coverurl}` : null,
-          fileExtension: book.extension ?? null
+          id: !!book.id?.trim() ? parseInt(book.id) : null,
+          title: !!book.title?.trim() ? book.title : null,
+          author: !!book.author?.trim() ? book.author : null,
+          md5: !!book.md5?.trim() ? book.md5 : null,
+          fileExtension: !!book.extension?.trim() ? book.extension : null
         }));
       }
     } else {
