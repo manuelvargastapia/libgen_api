@@ -13,4 +13,7 @@ Library Genesis doesn't provide a public API, so this project depends on [libgeb
 - [ ] Handle ocasional Gateway Timeouts of `getFastestMirror()`
 - [ ] Use a model to generate response data (at least a BookModel)
 - [ ] Provide beeter feedback by returning corresponding HTTP codes
+  - [ ] Check [Express error handling](https://www.robinwieruch.de/node-express-error-handling)
 - [ ] Change remote branch name of libgen.js
+- [ ] Improve performance
+  - [ ] Check [Express guide](https://expressjs.com/en/advanced/best-practice-performance.html)
