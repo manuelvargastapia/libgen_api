@@ -12,6 +12,7 @@ async function getFastestMirror(): Promise<string> {
     mirror = await libgen.mirror();
   } catch (error) {
     debug('error: %o', error);
+    return error;
   }
   return mirror;
 }
@@ -78,6 +79,7 @@ export async function getBookById(id: number) {
     }
   } catch (error) {
     debug('error: %o', error);
+    return error;
   }
   return data;
 }
@@ -115,6 +117,7 @@ export async function search(searchOptions: SearchOptions) {
     }
   } catch (error) {
     debug('error: %o', error);
+    return error;
   }
   return data;
 }
@@ -128,6 +131,7 @@ export async function getDownloadPage(md5: string): Promise<string> {
     downloadPageURL = result;
   } catch (error) {
     debug('error: %o', error);
+    return error;
   }
   return downloadPageURL;
 }

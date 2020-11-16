@@ -20,6 +20,7 @@ export async function getDownloadLink(url: string): Promise<string> {
     }
   } catch (error) {
     debug('error: %o', error);
+    return error;
   }
   return downloadLink;
 }
