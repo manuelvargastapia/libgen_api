@@ -88,11 +88,14 @@ app.use(cors());
 app.get(
   '/search',
   validator.query(searchQuerySchema),
-  async (req: ValidatedRequest<SearchRequest>, res: express.Response) => {
+  async (req: ValidatedRequest<SearchRequest>, res: express.Response, next) => {
     debug(`${req.method} ${req.url}`);
-    const data = await search(req.query);
+    const { data, totalCount, error } = await search(req.query);
+    if (error) {
+      next(error);
+    }
     debug('sending results: %O', data);
-    res.status(200).json({ data });
+    res.status(200).json({ data, totalCount });
   }
 );
 

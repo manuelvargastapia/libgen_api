@@ -17,7 +17,7 @@ async function getFastestMirror(): Promise<string> {
   return mirror;
 }
 
-export async function getBookById(id: number) {
+export async function getBookById(id: number): Promise<any[]> {
   let data: any[] = [];
   try {
     debug('id: %d', id);
@@ -48,9 +48,8 @@ export async function getBookById(id: number) {
       ]
     };
     debug('options: %O', options);
-    const results = await libgen.search(options);
+    const { results, _ } = await libgen.search(options);
     if (results.length || results.length === 0) {
-      debug('results count: %d', results.length);
       if (results.length) {
         data = results.map((book: any) => ({
           id: !!book.id?.trim() ? parseInt(book.id) : null,
@@ -84,8 +83,12 @@ export async function getBookById(id: number) {
   return data;
 }
 
-export async function search(searchOptions: SearchOptions) {
+export async function search(
+  searchOptions: SearchOptions
+): Promise<{ data: any[]; totalCount: number; error: any }> {
   let data: any[] = [];
+  let totalCount: number = 0;
+  let error: any = null;
   try {
     const mirror = await getFastestMirror();
     debug('mirror: %s', mirror);
@@ -100,26 +103,26 @@ export async function search(searchOptions: SearchOptions) {
       fields: ['id', 'title', 'author', 'md5', 'extension']
     };
     debug('options: %O', options);
-    const results = await libgen.search(options);
-    if (results.length || results.length === 0) {
-      debug('results count: %d', results.length);
-      if (results.length) {
-        data = results.map((book: any) => ({
-          id: !!book.id?.trim() ? parseInt(book.id) : null,
-          title: !!book.title?.trim() ? book.title : null,
-          author: !!book.author?.trim() ? book.author : null,
-          md5: !!book.md5?.trim() ? book.md5 : null,
-          fileExtension: !!book.extension?.trim() ? book.extension : null
-        }));
-      }
+    const { results, count } = await libgen.search(options);
+    if (results?.length && count) {
+      data = results.map((book: any) => ({
+        id: !!book.id?.trim() ? parseInt(book.id) : null,
+        title: !!book.title?.trim() ? book.title : null,
+        author: !!book.author?.trim() ? book.author : null,
+        md5: !!book.md5?.trim() ? book.md5 : null,
+        fileExtension: !!book.extension?.trim() ? book.extension : null
+      }));
+      totalCount = parseInt(count);
+      debug('results count: %d', totalCount);
     } else {
-      throw new Error(`libgen.search error: ${results}`);
+      return { data, totalCount, error };
     }
   } catch (error) {
     debug('error: %o', error);
-    return error;
+    return { data, totalCount, error };
   }
-  return data;
+  console.log(data, totalCount);
+  return { data, totalCount, error };
 }
 
 export async function getDownloadPage(md5: string): Promise<string> {
