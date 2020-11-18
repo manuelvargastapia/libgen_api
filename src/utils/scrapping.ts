@@ -3,8 +3,9 @@ import fetch from 'node-fetch';
 
 const debug = require('debug')('scrapping');
 
-export async function getDownloadLink(url: string): Promise<string> {
+export async function getDownloadLink(url: string): Promise<{ downloadLink: string; error: any }> {
   let downloadLink: string = '';
+  let error: any = null;
   try {
     debug('getting download link from %s', url);
     const selector = '#download > h2 > a';
@@ -20,7 +21,7 @@ export async function getDownloadLink(url: string): Promise<string> {
     }
   } catch (error) {
     debug('error: %o', error);
-    return error;
+    return { downloadLink, error };
   }
-  return downloadLink;
+  return { downloadLink, error };
 }

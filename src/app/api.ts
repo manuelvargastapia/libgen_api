@@ -91,9 +91,7 @@ app.get(
   async (req: ValidatedRequest<SearchRequest>, res: express.Response, next) => {
     debug(`${req.method} ${req.url}`);
     const { data, totalCount, error } = await search(req.query);
-    if (error) {
-      next(error);
-    }
+    if (error) next(error);
     debug('sending results: %O', data);
     res.status(200).json({ data, totalCount });
   }
@@ -104,7 +102,8 @@ app.get(
   validator.query(getBookDetailsQuerySchema),
   async (req: ValidatedRequest<DetailsRequest>, res: express.Response, next) => {
     debug(`${req.method} ${req.url}`);
-    const data = await getBookById(req.query.id).catch(next);
+    const { data, error } = await getBookById(req.query.id);
+    if (error) next(error);
     debug('sending book details: %O', data);
     res.status(200).json({ data });
   }
@@ -115,23 +114,17 @@ app.get(
   validator.query(downloadQuerySchema),
   async (req: ValidatedRequest<DownloadRequest>, res: express.Response, next) => {
     debug(`${req.method} ${req.url}`);
-    const downloadPageURL = await getDownloadPage(req.query.md5).catch(next);
+    const { downloadPageURL, error } = await getDownloadPage(req.query.md5);
+    if (error) next(error);
     debug('download page url: %s', downloadPageURL);
-    if (downloadPageURL != '') {
-      res.locals.downloadPageURL = downloadPageURL;
-      next();
-    } else {
-      res.status(404).json({ error: 'resource not found' });
-    }
+    res.locals.downloadPageURL = downloadPageURL;
+    next();
   },
   async (req, res, next) => {
-    const downloadLink = await getDownloadLink(res.locals.downloadPageURL).catch(next);
+    const { downloadLink, error } = await getDownloadLink(res.locals.downloadPageURL);
+    if (error) next(error);
     debug('sending download link: %s', downloadLink);
-    if (downloadLink != '') {
-      res.status(200).json({ data: { downloadLink } });
-    } else {
-      res.status(404).json({ error: 'resource not found' });
-    }
+    res.status(200).json({ data: { downloadLink } });
   }
 );
 
