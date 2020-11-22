@@ -99,7 +99,27 @@ export async function search(
       reverse: searchOptions.reverse,
       sort_by: searchOptions.sortBy,
       offset: searchOptions.offset,
-      fields: ['id', 'title', 'author', 'md5', 'extension']
+      fields: [
+        'id',
+        'title',
+        'author',
+        'year',
+        'md5',
+        'coverurl',
+        'volumeinfo',
+        'series',
+        'edition',
+        'publisher',
+        'city',
+        'pages',
+        'language',
+        'identifier',
+        'doi',
+        'filesize',
+        'extension',
+        'descr',
+        'toc'
+      ]
     };
     debug('options: %O', options);
     const { results, count } = await libgen.search(options);
@@ -108,8 +128,22 @@ export async function search(
         id: !!book.id?.trim() ? parseInt(book.id) : null,
         title: !!book.title?.trim() ? book.title : null,
         author: !!book.author?.trim() ? book.author : null,
+        year: !!book.year?.trim() ? parseInt(book.year) : null,
         md5: !!book.md5?.trim() ? book.md5 : null,
-        fileExtension: !!book.extension?.trim() ? book.extension : null
+        coverUrl: !!book.coverurl?.trim() ? `${coversHost}${book.coverurl}` : null,
+        volumeInfo: !!book.volumeinfo?.trim() ? parseInt(book.volumeinfo) : null,
+        series: !!book.series?.trim() ? book.series : null,
+        edition: !!book.edition?.trim() ? book.edition : null,
+        publisher: !!book.publisher?.trim() ? book.publisher : null,
+        city: !!book.city?.trim() ? book.city : null,
+        pages: !!book.pages?.trim() ? parseInt(book.pages) : null,
+        language: !!book.language?.trim() ? book.language : null,
+        isbn: !!book.identifier?.trim() ? book.identifier : null,
+        doi: !!book.doi?.trim() ? book.doi : null,
+        fileSize: !!book.filesize?.trim() ? parseInt(book.filesize) : null,
+        fileExtension: !!book.extension?.trim() ? book.extension : null,
+        description: !!book.descr?.trim() ? book.descr : null,
+        contents: !!book.toc?.trim() ? book.toc : null
       }));
       totalCount = parseInt(count);
       debug('results count: %d', totalCount);
@@ -120,7 +154,6 @@ export async function search(
     debug('error: %o', error);
     return { data, totalCount, error };
   }
-  console.log(data, totalCount);
   return { data, totalCount, error };
 }
 
