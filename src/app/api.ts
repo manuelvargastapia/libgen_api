@@ -8,6 +8,7 @@ import {
   ExpressJoiError
 } from 'express-joi-validation';
 import cors from 'cors';
+import compression from 'compression';
 
 import { getDownloadLink } from '../utils/scrapping';
 import { search, getDownloadPage } from '../utils/libgen';
@@ -73,6 +74,8 @@ interface DownloadRequest extends ValidatedRequestSchema {
 }
 
 app.use(cors());
+
+app.use(compression());
 
 const apiTimeout = 15000;
 
