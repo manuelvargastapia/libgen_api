@@ -1,5 +1,6 @@
 import { JSDOM } from 'jsdom';
 import fetch from 'node-fetch';
+import { APIError } from './error';
 
 const debug = require('debug')('scrapping');
 
@@ -21,7 +22,7 @@ export async function getDownloadLink(url: string): Promise<{ downloadLink: stri
     }
   } catch (error) {
     debug('error: %o', error);
-    return { downloadLink, error };
+    return { downloadLink, error: new APIError(error) };
   }
   return { downloadLink, error };
 }

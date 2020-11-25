@@ -1,18 +1,19 @@
 import { SearchOptions } from '../types';
+import { APIError, ErrorCode } from './error';
 
 const debug = require('debug')('libgen');
 const libgen = require('libgen');
 
 const coversHost: string = 'http://library.lol/covers/';
 
-async function getFastestMirror(): Promise<string> {
+async function getFastestMirror(): Promise<string | Error> {
   debug('getting fastest mirror');
   let mirror: string = 'http://gen.lib.rus.ec';
   try {
     mirror = await libgen.mirror();
   } catch (error) {
     debug('error: %o', error);
-    return error;
+    return new APIError(error);
   }
   return mirror;
 }
@@ -81,13 +82,12 @@ export async function search(
         contents: !!book.toc?.trim() ? book.toc : null
       }));
       totalCount = parseInt(count);
-      debug('results count: %d', totalCount);
     } else {
-      return { data, totalCount, error };
+      return { data, totalCount, error: new APIError('no results', ErrorCode.NotFound) };
     }
   } catch (error) {
     debug('error: %o', error);
-    return { data, totalCount, error };
+    return { data, totalCount, error: new APIError(error) };
   }
   return { data, totalCount, error };
 }
@@ -104,7 +104,7 @@ export async function getDownloadPage(
     downloadPageURL = result;
   } catch (error) {
     debug('error: %o', error);
-    return { downloadPageURL, error };
+    return { downloadPageURL, error: new APIError(error) };
   }
   return { downloadPageURL, error };
 }

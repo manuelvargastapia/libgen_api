@@ -11,6 +11,7 @@ import cors from 'cors';
 
 import { getDownloadLink } from '../utils/scrapping';
 import { search, getDownloadPage } from '../utils/libgen';
+import { APIError, ErrorCode } from '../utils/error';
 
 let port = process.env.PORT;
 if (port == null || port === '') {
@@ -71,9 +72,24 @@ interface DownloadRequest extends ValidatedRequestSchema {
   };
 }
 
-debug('starting api in port %s', port);
-
 app.use(cors());
+
+const apiTimeout = 15000;
+
+app.use((req, res, next) => {
+  let error = new APIError();
+  req.setTimeout(apiTimeout, () => {
+    error.message = 'request timeout';
+    error.status = ErrorCode.Timeout;
+    return next(error);
+  });
+  res.setTimeout(apiTimeout, () => {
+    error.message = 'service unavailable';
+    error.status = ErrorCode.Unavailable;
+    return next(error);
+  });
+  return next();
+});
 
 app.get(
   '/search',
@@ -81,8 +97,17 @@ app.get(
   async (req: ValidatedRequest<SearchRequest>, res: express.Response, next) => {
     debug(`${req.method} ${req.url}`);
     const { data, totalCount, error } = await search(req.query);
-    if (error) next(error);
-    debug('sending results: %O', data);
+    if (error) return next(error);
+    if (res.statusCode == 503) {
+      debug('request finished with timeout; preventing continuing with the flow');
+      return;
+    }
+    debug(
+      'sending results: data length = %d / total count = %d / status code = %d',
+      data.length,
+      totalCount,
+      200
+    );
     res.status(200).json({ data, totalCount });
   }
 );
@@ -93,14 +118,22 @@ app.get(
   async (req: ValidatedRequest<DownloadRequest>, res: express.Response, next) => {
     debug(`${req.method} ${req.url}`);
     const { downloadPageURL, error } = await getDownloadPage(req.query.md5);
-    if (error) next(error);
-    debug('download page url: %s', downloadPageURL);
+    if (error) return next(error);
+    if (res.statusCode == 503) {
+      debug('request finished with timeout; preventing continuing with the flow');
+      return;
+    }
+    debug('sending download page url: %s', downloadPageURL);
     res.locals.downloadPageURL = downloadPageURL;
     next();
   },
   async (req, res, next) => {
     const { downloadLink, error } = await getDownloadLink(res.locals.downloadPageURL);
-    if (error) next(error);
+    if (error) return next(error);
+    if (res.statusCode == 503) {
+      debug('request finished with timeout; preventing continuing with the flow');
+      return;
+    }
     debug('sending download link: %s', downloadLink);
     res.status(200).json({ data: { downloadLink } });
   }
@@ -108,29 +141,36 @@ app.get(
 
 app.use(
   (
-    err: any | ExpressJoiError,
+    err: any | APIError | ExpressJoiError,
     req: express.Request,
     res: express.Response,
     next: express.NextFunction
   ) => {
-    // debug('CONTAINER TYPES: %O', ContainerTypes); FIX: ContainerTypes is undefined when accessed as an object
-    // if (err && err.type in ContainerTypes) {
-    //   const e: ExpressJoiError = err;
-    //   res.status(400).end(`You submitted a bad ${e.type} paramater`);
-    // } else {
-    //   res.status(500).end('internal server error');
-    // }
-
-    if (err && err.error && err.error.isJoi) {
-      res.status(400).json({
+    if (err?.error?.isJoi) {
+      err = <ExpressJoiError>err;
+      debug(
+        'ExpressJoiError error: status = %d / type = %s / message = %s',
+        400,
+        err.type,
+        err.error
+      );
+      return res.status(400).json({
         type: err.type,
-        error: err.error.toString()
-      });
-    } else {
-      res.status(500).json({
-        error: 'internal server error'
+        error: err.error?.toString() ?? 'Joi error'
       });
     }
+
+    if (err && err instanceof APIError) {
+      debug('APIError: status = %d / message = %s', err.status, err.message);
+      return res.status(err.status).json({
+        error: err.message
+      });
+    }
+
+    debug('internal error');
+    return res.status(500).json({
+      error: 'internal server error'
+    });
   }
 );
 
