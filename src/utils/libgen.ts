@@ -59,7 +59,10 @@ export async function search(
     };
     debug('options: %O', options);
     const { results, count } = await libgen.search(options);
-    if (results?.length && count) {
+    if (count == 0) {
+      return { data, totalCount, error: new APIError('no results', ErrorCode.NotFound) };
+    }
+    if (!!results && !!results.length && !!count) {
       data = results.map((book: any) => ({
         id: !!book.id?.trim() ? parseInt(book.id) : null,
         title: !!book.title?.trim() ? book.title : null,
@@ -81,15 +84,13 @@ export async function search(
         description: !!book.descr?.trim() ? book.descr : null,
         contents: !!book.toc?.trim() ? book.toc : null
       }));
-      totalCount = parseInt(count);
-    } else {
-      return { data, totalCount, error: new APIError('no results', ErrorCode.NotFound) };
+      return { data, totalCount: parseInt(count), error };
     }
+    throw new Error(`libgen.search error: ${results}`);
   } catch (error) {
     debug('error: %o', error);
     return { data, totalCount, error: new APIError(error) };
   }
-  return { data, totalCount, error };
 }
 
 export async function getDownloadPage(
