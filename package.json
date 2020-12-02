@@ -25,7 +25,8 @@
     "libgen": "git+ssh://git@github.com:manuelvargastapia/libgen.js.git#custom_libgen",
     "node-fetch": "2.6.1",
     "ts-node": "9.0.0",
-    "typescript": "4.0.3"
+    "typescript": "4.0.3",
+    "yargs": "16.1.1"
   },
   "engines": {
     "node": "12.8.x",
