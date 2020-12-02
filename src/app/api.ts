@@ -14,10 +14,22 @@ import { getDownloadLink } from '../utils/scrapping';
 import { search, getDownloadPage } from '../utils/libgen';
 import { APIError, ErrorCode } from '../utils/error';
 
-let port = process.env.PORT;
-if (port == null || port === '') {
-  port = '8000';
-}
+const argv = require('yargs')
+  .option('hostname', {
+    alias: 'host',
+    description: 'Define the server hostname. Default: localhost.',
+    type: 'string'
+  })
+  .option('port', {
+    alias: 'port',
+    description: 'Define the server port. Default: 8000.',
+    type: 'number'
+  })
+  .help()
+  .alias('help', 'h').argv;
+
+const port: number = argv.port ?? 8000;
+const hostname: string = argv.hostname ?? 'localhost';
 
 const debug = require('debug')('express');
 
@@ -177,6 +189,6 @@ app.use(
   }
 );
 
-app.listen(port, () => {
-  debug(`listening http://localhost:${port}`);
+app.listen(port, hostname, () => {
+  debug(`listening http://${hostname}:${port}`);
 });
