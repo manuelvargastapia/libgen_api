@@ -9,20 +9,25 @@ export async function getDownloadLink(url: string): Promise<{ downloadLink: stri
   let error: any = null;
   try {
     debug('getting download link from %s', url);
-    const selector = '#download > h2 > a';
+    const cloudflareSelector = '#download > ul > li:nth-child(1) > a';
+    const defaultSelector = '#download > h2 > a';
     const response = await fetch(url);
     const text = await response.text();
     const dom = new JSDOM(text);
     const { document } = dom.window;
-    const list = [...document.querySelectorAll<any>(selector)].map(a => a.href); // Set to any because Element has no "href" as a property
+    let list = [...document.querySelectorAll<any>(cloudflareSelector)].map(a => a.href); // Set to any because Element has no "href" as a property
     if (list.length && list[0] && list[0] != '') {
       [downloadLink] = list;
-    } else {
-      throw new Error(`scrapping error. href list: ${list}`);
+      return { downloadLink, error };
     }
+    list = [...document.querySelectorAll<any>(defaultSelector)].map(a => a.href);
+    if (list.length && list[0] && list[0] != '') {
+      [downloadLink] = list;
+      return { downloadLink, error };
+    }
+    throw new Error(`scrapping error. href list: ${list}`);
   } catch (error) {
     debug('error: %o', error);
     return { downloadLink, error: new APIError(error) };
   }
-  return { downloadLink, error };
 }
