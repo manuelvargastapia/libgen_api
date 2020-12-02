@@ -1,5 +1,5 @@
 export type SearchOptions = {
-  searchQuery: string;
+  searchTerm: string;
   count: number;
   searchIn: string;
   reverse: boolean;
