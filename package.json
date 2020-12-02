@@ -22,7 +22,7 @@
     "express-joi-validation": "4.0.4-beta.0",
     "got": "11.8.0",
     "jsdom": "16.4.0",
-    "libgen": "git+ssh://git@github.com:manuelvargastapia/libgen.js.git#custom_libgen",
+    "libgen": "git+https://git@github.com:manuelvargastapia/libgen.js.git#custom_libgen",
     "node-fetch": "2.6.1",
     "ts-node": "9.0.0",
     "typescript": "4.0.3",
