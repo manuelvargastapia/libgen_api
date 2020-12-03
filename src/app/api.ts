@@ -17,19 +17,19 @@ import { APIError, ErrorCode } from '../utils/error';
 const argv = require('yargs')
   .option('hostname', {
     alias: 'host',
-    description: 'Define the server hostname. Default: localhost.',
+    description: 'Define the server hostname. Default: 0.0.0.0.',
     type: 'string'
   })
   .option('port', {
     alias: 'port',
-    description: 'Define the server port. Default: 8000.',
+    description: 'Define the server port. Default: 3000.',
     type: 'number'
   })
   .help()
   .alias('help', 'h').argv;
 
-const port: number = argv.port ?? 8000;
-const hostname: string = argv.hostname ?? 'localhost';
+const port: number = argv.port ?? process.env.PORT ?? 3000;
+const hostname: string = argv.hostname ?? '0.0.0.0';
 
 const debug = require('debug')('express');
 
