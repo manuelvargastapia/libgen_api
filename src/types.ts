@@ -6,3 +6,13 @@ export type SearchOptions = {
   sortBy: string;
   offset: number;
 };
+
+export type SearchInFictionOptions = {
+  searchTerm: string;
+  count: number;
+  searchIn: string;
+  offset: number;
+  wildcardWords: boolean;
+  language: string;
+  extension: string;
+};
