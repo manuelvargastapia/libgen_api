@@ -1,10 +1,11 @@
-import { SearchOptions } from '../types';
+import { SearchOptions, SearchInFictionOptions } from '../types';
 import { APIError, ErrorCode } from './error';
 
 const debug = require('debug')('libgen');
 const libgen = require('libgen');
 
 const coversHost: string = 'http://library.lol/covers/';
+const downloadHost: string = 'http://library.lol/fiction/';
 
 async function getFastestMirror(): Promise<string | Error> {
   debug('getting fastest mirror');
@@ -85,6 +86,55 @@ export async function search(
         contents: !!book.toc?.trim() ? book.toc : null
       }));
       return { data, totalCount: parseInt(count), error };
+    }
+    throw new Error(`libgen.search error: ${results}`);
+  } catch (error) {
+    debug('error: %o', error);
+    return { data, totalCount, error: new APIError(error) };
+  }
+}
+
+export async function searchInFiction(
+  searchOptions: SearchInFictionOptions
+): Promise<{ data: any[]; totalCount: number; error: any }> {
+  let data: any[] = [];
+  let totalCount: number = 0;
+  let error: any = null;
+  try {
+    const mirror = await getFastestMirror();
+    debug('mirror: %s', mirror);
+    const options = {
+      mirror,
+      query: searchOptions.searchTerm,
+      count: searchOptions.count,
+      searchIn: searchOptions.searchIn,
+      offset: searchOptions.offset,
+      wildcardWords: searchOptions.wildcardWords,
+      extension: searchOptions.extension,
+      language: searchOptions.language
+    };
+    debug('options: %O', options);
+    const { results, totalCount } = await libgen.searchInFiction(options);
+    if (totalCount == 0) {
+      return { data, totalCount, error: new APIError('no results', ErrorCode.NotFound) };
+    }
+    if (!!results && !!results.length && !!totalCount) {
+      data = results.map((book: any) => ({
+        id: !!book.id?.trim() ? parseInt(book.id) : null,
+        title: !!book.title?.trim() ? book.title : null,
+        author: !!book.author?.trim() ? book.author : null,
+        year: !!book.year?.trim() ? parseInt(book.year) : null,
+        downloadPageURL: !!book.md5?.trim() ? `${downloadHost}${book.md5}` : null,
+        coverUrl: !!book.coverurl?.trim() ? `${book.coverurl}` : null,
+        series: !!book.series?.trim() ? book.series : null,
+        publisher: !!book.publisher?.trim() ? book.publisher : null,
+        language: !!book.language?.trim() ? book.language : null,
+        isbn: !!book.isbn?.trim() ? book.isbn : null,
+        fileSize: !!book.filesize?.trim() ? book.filesize : null,
+        fileExtension: !!book.format?.trim() ? book.format : null,
+        description: !!book.description?.trim() ? book.description : null
+      }));
+      return { data, totalCount: parseInt(totalCount), error };
     }
     throw new Error(`libgen.search error: ${results}`);
   } catch (error) {
