@@ -11,8 +11,10 @@ import cors from 'cors';
 import compression from 'compression';
 
 import { getDownloadLink } from '../utils/scrapping';
-import { search, getDownloadPage } from '../utils/libgen';
+import { search, searchInFiction, getDownloadPage } from '../utils/libgen';
 import { APIError, ErrorCode } from '../utils/error';
+import { languages } from '../utils/fiction_languages';
+import { SearchInFictionOptions, SearchOptions } from '../types';
 
 const argv = require('yargs')
   .option('hostname', {
@@ -64,24 +66,41 @@ const searchQuerySchema = Joi.object({
   offset: Joi.number().default(0)
 });
 
+const searchInFictionQuerySchema = Joi.object({
+  searchTerm: Joi.string(),
+  count: Joi.number()
+    .max(20)
+    .default(5),
+  searchIn: Joi.string()
+    .equal('def', 'title', 'author', 'series')
+    .default('def'),
+  offset: Joi.number().default(0),
+  wildcardWords: Joi.boolean().default(false),
+  language: Joi.string()
+    .equal(...languages)
+    .default('def'),
+  extension: Joi.string()
+    .equal('def', 'epub', 'mobi', 'azw', 'azw3', 'fb2', 'pdf', 'rtf', 'txt')
+    .default('def')
+});
+
 const downloadQuerySchema = Joi.object({
-  md5: Joi.string()
+  md5: Joi.string(),
+  downloadPageURL: Joi.string()
 });
 
 interface SearchRequest extends ValidatedRequestSchema {
-  [ContainerTypes.Query]: {
-    searchTerm: string;
-    count: number;
-    searchIn: string;
-    reverse: boolean;
-    sortBy: string;
-    offset: number;
-  };
+  [ContainerTypes.Query]: SearchOptions;
+}
+
+interface SearchInFictionRequest extends ValidatedRequestSchema {
+  [ContainerTypes.Query]: SearchInFictionOptions;
 }
 
 interface DownloadRequest extends ValidatedRequestSchema {
   [ContainerTypes.Query]: {
     md5: string;
+    downloadPageURL: string;
   };
 }
 
@@ -128,10 +147,36 @@ app.get(
 );
 
 app.get(
+  '/search/fiction',
+  validator.query(searchInFictionQuerySchema),
+  async (req: ValidatedRequest<SearchInFictionRequest>, res: express.Response, next) => {
+    debug(`${req.method} ${req.url}`);
+    const { data, totalCount, error } = await searchInFiction(req.query);
+    if (error) return next(error);
+    if (res.statusCode == 503) {
+      debug('request finished with timeout; preventing continuing with the flow');
+      return;
+    }
+    debug(
+      'sending results: data length = %d / total count = %d / status code = %d',
+      data.length,
+      totalCount,
+      200
+    );
+    res.status(200).json({ data, totalCount });
+  }
+);
+
+app.get(
   '/download',
   validator.query(downloadQuerySchema),
   async (req: ValidatedRequest<DownloadRequest>, res: express.Response, next) => {
     debug(`${req.method} ${req.url}`);
+    if (req.query.downloadPageURL) {
+      debug('sending download page url: %s', req.query.downloadPageURL);
+      res.locals.downloadPageURL = req.query.downloadPageURL;
+      return next();
+    }
     const { downloadPageURL, error } = await getDownloadPage(req.query.md5);
     if (error) return next(error);
     if (res.statusCode == 503) {
