@@ -32,6 +32,3 @@ See [*package.json*](package.json) for details.
 
 [Learn more about Heroku](https://devcenter.heroku.com/categories/nodejs-support).
 
-## TODO
-
-- [ ] Improve performance
