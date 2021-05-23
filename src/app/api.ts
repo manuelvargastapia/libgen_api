@@ -11,9 +11,8 @@ import cors from 'cors';
 import compression from 'compression';
 
 import { getDownloadLink } from '../utils/scrapping';
-import { search, searchInFiction, getDownloadPage } from '../utils/libgen';
+import { search, searchInFiction, getDownloadPage, getFictionLanguagesList } from '../utils/libgen';
 import { APIError, ErrorCode } from '../utils/error';
-import { languages } from '../utils/fiction_languages';
 import { SearchInFictionOptions, SearchOptions } from '../types';
 
 const argv = require('yargs')
@@ -67,17 +66,17 @@ const searchQuerySchema = Joi.object({
 });
 
 const searchInFictionQuerySchema = Joi.object({
-  searchTerm: Joi.string(),
+  searchTerm: Joi.string().allow(''),
   count: Joi.number()
     .max(20)
     .default(5),
   searchIn: Joi.string()
-    .equal('def', 'title', 'author', 'series')
+    .equal('def', 'title', 'authors', 'series')
     .default('def'),
   offset: Joi.number().default(0),
   wildcardWords: Joi.boolean().default(false),
   language: Joi.string()
-    .equal(...languages)
+    .equal(...getFictionLanguagesList())
     .default('def'),
   extension: Joi.string()
     .equal('def', 'epub', 'mobi', 'azw', 'azw3', 'fb2', 'pdf', 'rtf', 'txt')
@@ -187,7 +186,7 @@ app.get(
     res.locals.downloadPageURL = downloadPageURL;
     next();
   },
-  async (req, res, next) => {
+  async (_req, res, next) => {
     const { downloadLink, error } = await getDownloadLink(res.locals.downloadPageURL);
     if (error) return next(error);
     if (res.statusCode == 503) {
@@ -198,6 +197,13 @@ app.get(
     res.status(200).json({ data: { downloadLink } });
   }
 );
+
+app.get('/fiction/languages', async (req: express.Request, res: express.Response, next) => {
+  debug(`${req.method} ${req.url}`);
+  const languages = getFictionLanguagesList();
+  debug('sending results: data length = %d / status code = %d', languages.length, 200);
+  res.status(200).json({ data: languages });
+});
 
 app.use(
   (

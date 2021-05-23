@@ -159,3 +159,7 @@ export async function getDownloadPage(
   }
   return { downloadPageURL, error };
 }
+
+export function getFictionLanguagesList(): string[] {
+  return libgen.utils.fictionLanguagesList;
+}
