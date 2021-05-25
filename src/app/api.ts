@@ -14,6 +14,7 @@ import { getDownloadLink } from '../utils/scrapping';
 import { search, searchInFiction, getDownloadPage, getFictionLanguagesList } from '../utils/libgen';
 import { APIError, ErrorCode } from '../utils/error';
 import { SearchInFictionOptions, SearchOptions } from '../types';
+import v2Router from './v2';
 
 const argv = require('yargs')
   .option('hostname', {
@@ -198,7 +199,9 @@ app.get(
   }
 );
 
-app.get('/fiction/languages', async (req: express.Request, res: express.Response, next) => {
+app.use('/v2', v2Router);
+
+app.get('/fiction/languages', async (req: express.Request, res: express.Response, _next) => {
   debug(`${req.method} ${req.url}`);
   const languages = getFictionLanguagesList();
   debug('sending results: data length = %d / status code = %d', languages.length, 200);
@@ -208,9 +211,9 @@ app.get('/fiction/languages', async (req: express.Request, res: express.Response
 app.use(
   (
     err: any | APIError | ExpressJoiError,
-    req: express.Request,
+    _req: express.Request,
     res: express.Response,
-    next: express.NextFunction
+    _next: express.NextFunction
   ) => {
     if (err?.error?.isJoi) {
       err = <ExpressJoiError>err;
