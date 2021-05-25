@@ -41,7 +41,7 @@ const validator = createValidator({ passError: true });
 const searchQuerySchema = Joi.object({
   searchTerm: Joi.string()
     .required()
-    .min(4),
+    .min(2),
   count: Joi.number()
     .max(20)
     .default(5),
